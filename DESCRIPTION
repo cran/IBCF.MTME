@@ -1,9 +1,9 @@
 Package: IBCF.MTME
 Title: Item Based Collaborative Filtering for Multi-Trait and
         Multi-Environment Data
-Version: 1.5-1
+Version: 1.6-0
 Language: en-US
-Date: 2018-11-22
+Date: 2019-03-17
 Authors@R: c(person("Francisco Javier", "Luna-Vazquez", email = "frahik@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-5370-7152")),
              person("Osval Antonio", "Montesinos-Lopez", email= "oamontes1@ucol.mx", role = "aut", comment = c(ORCID = "0000-0002-3973-6547")),
              person("Abelardo", "Montesinos-Lopez", role = "aut"),
@@ -22,8 +22,8 @@ NeedsCompilation: no
 Collate: CrossValidation.R IBCF.R IBCF.MTME.R IBCFYear.R methods.R
         Td2M.R Title.R Wheat_IBCF.R Year_IBCF.R
 Imports: lsa, tidyr, dplyr
-Suggests: testthat, knitr, rmarkdown
-Packaged: 2018-11-22 17:19:34 UTC; Francisco
+Suggests: testthat, knitr, rmarkdown, covr
+Packaged: 2019-03-23 04:37:48 UTC; frahik
 Author: Francisco Javier Luna-Vazquez [aut, cre]
     (<https://orcid.org/0000-0002-5370-7152>),
   Osval Antonio Montesinos-Lopez [aut]
@@ -31,4 +31,4 @@ Author: Francisco Javier Luna-Vazquez [aut, cre]
   Abelardo Montesinos-Lopez [aut],
   Jose Crossa [aut] (<https://orcid.org/0000-0001-9429-5855>)
 Repository: CRAN
-Date/Publication: 2018-11-22 17:40:07 UTC
+Date/Publication: 2019-03-23 05:18:07 UTC

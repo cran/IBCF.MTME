@@ -8,17 +8,16 @@
 #' @param ... Further arguments passed to or from other methods.
 #'
 #' @importFrom stats cor
-#' @importFrom dplyr summarise group_by select '%>%' mutate_if funs
+#' @importFrom dplyr summarise group_by select '%>%' mutate_if funs n ungroup
 #'
 #' @export
 summary.IBCF <- function(object, information = 'compact', digits = 4, ...){
-  if (!inherits(object, "IBCF")) stop("This function only works for objects of class 'IBCF'")
-
   object$predictions_Summary %>%
     group_by(Environment, Trait, Partition) %>%
     summarise(Pearson = cor(Predicted, Observed, use = 'pairwise.complete.obs'),
               MAAPE = mean(atan(abs(Observed-Predicted)/abs(Observed)))) %>%
     select(Environment, Trait, Partition, Pearson, MAAPE) %>%
+    ungroup() %>%
     mutate_if(is.numeric, funs(round(., digits))) %>%
     as.data.frame() -> presum
 
@@ -26,6 +25,7 @@ summary.IBCF <- function(object, information = 'compact', digits = 4, ...){
     summarise(SE_MAAPE = sd(MAAPE, na.rm = TRUE)/sqrt(n()), MAAPE = mean(MAAPE, na.rm = TRUE),
               SE_Pearson = sd(Pearson, na.rm = TRUE)/sqrt(n()), Pearson = mean(Pearson, na.rm = TRUE))  %>%
     select(Environment, Trait, Pearson, SE_Pearson, MAAPE, SE_MAAPE) %>%
+    ungroup() %>%
     mutate_if(is.numeric, funs(round(., digits))) %>%
     as.data.frame() -> finalSum
 
@@ -52,17 +52,16 @@ summary.IBCF <- function(object, information = 'compact', digits = 4, ...){
 #' @param ... Further arguments passed to or from other methods.
 #'
 #' @importFrom stats cor
-#' @importFrom dplyr summarise group_by select '%>%' mutate_if funs
+#' @importFrom dplyr summarise group_by select '%>%' mutate_if funs n ungroup
 #'
 #' @export
 summary.IBCFY <- function(object, digits = 4, ...) {
-  if (!inherits(object, "IBCFY")) stop("This function only works for objects of class 'IBCFY'")
-
   object$predictions_Summary %>%
     group_by(Environment, Trait) %>%
     summarise(Pearson = cor(Predicted, Observed, use = 'pairwise.complete.obs'),
               MAAPE = mean(atan(abs(Observed-Predicted)/abs(Observed)))) %>%
     select(Environment, Trait, Pearson, MAAPE) %>%
+    ungroup() %>%
     mutate_if(is.numeric, funs(round(., digits))) %>%
     as.data.frame() -> out
 
@@ -80,11 +79,8 @@ summary.IBCFY <- function(object, digits = 4, ...) {
 #' @importFrom graphics arrows axis plot
 #' @export
 plot.IBCF <- function(x, select = 'Pearson', ...){
-  ### Check that object is compatible
-  if (!inherits(x, "IBCF")) stop("This function only works for objects of class 'IBCF'")
-
   results <- summary(x)
-  results[, select] <- results[order(results[, select]), select]
+  results <- results[order(results[, select]), ]
 
   if (select == "Pearson") {
     results$SE <- results$SE_Pearson * 1.96
@@ -94,12 +90,12 @@ plot.IBCF <- function(x, select = 'Pearson', ...){
     ylab <- select
   }
 
-  x.labels <- paste0(results$Trait, '_', results$Env)
-  plot.x <- seq_len(length(x.labels))
+  results$TxE <- paste0(results$Trait, '_', results$Env)
+  plot.x <- seq_len(length(results$TxE))
 
   plot(plot.x, results[, select], ylim = range(c(results[, select] - results$SE, results[, select] + results$SE)),
-      type = 'p', ylab = ylab, xlab = '', xaxt = "n", ...)
-  axis(1, at = plot.x, labels = x.labels, las = 2)
+      type = 'p', ylab = ylab, xlab = '', xaxt = "n")
+  axis(1, at = plot.x, labels = results$TxE, las = 2)
   arrows(plot.x, results[, select] - results$SE, plot.x, results[, select] + results$SE, code = 3, length = 0.02, angle = 90)
 }
 
@@ -115,12 +111,9 @@ plot.IBCF <- function(x, select = 'Pearson', ...){
 #' @importFrom graphics barplot
 #' @export
 barplot.IBCFY <- function(height, select = 'Pearson', ...){
-  ### Check that object is compatible
-  if (!inherits(height, "IBCFY")) stop("This function only works for objects of class 'IBCF'")
-
   results <- summary(height)
   vector <- as.numeric(paste(results[, select]))
-  names(vector) <- results[, 1]
+  names(vector) <- paste0(results[, 2], '_', results[, 1])
   vector <- vector[order(vector)]
 
   if (select == 'Pearson')
@@ -150,7 +143,7 @@ print.IBCF <- function(x, ...){
 
   cat('\nPredictive capacity of the model: \n')
 
-  print.data.frame(summary(x, 'compact', digits = 3), print.gap = 2L, quote = FALSE)
+  print.data.frame(head(summary(x, 'compact', digits = 3)), print.gap = 2L, quote = FALSE)
 
   cat('\n Use str() function to found more datailed information.')
   invisible(x)
@@ -176,7 +169,7 @@ print.IBCFY <- function(x, ...){
 
   cat('\nPredictive capacity of the model: \n')
 
-  print.data.frame(summary(x, 'compact', digits = 3), print.gap = 2L, quote = FALSE)
+  print.data.frame(head(summary(x, 'compact', digits = 3)), print.gap = 2L, quote = FALSE)
 
   cat('\n Use str() function to found more datailed information.')
   invisible(x)
